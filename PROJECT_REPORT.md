@@ -178,7 +178,7 @@ A GitHub Actions workflow is included to install dependencies, run the unit test
 | `templates/balance_movement_bridge_template.csv` | Fields required to reconcile savings balances |
 | `templates/fixed_term_maturity_template.csv` | Fields required to build an account/vintage-level maturity ladder |
 | `tests/test_analysis.py` | Tests for data totals, forecast benchmarks, reconciliation, cohort assumptions and maturity proxy |
-| `.github/workflows/tests.yml` | Automated test and analysis run |
+| `.github/dependabot.yml` | Weekly dependency update checks |\n| `.github/workflows/tests.yml` | Automated test and analysis run |
 | `.gitignore` | Excludes generated outputs, caches and local environments |
 | `README.md` | Concise project overview, results and limitations |
 | `index.html` | Dashboard updates, rolling-origin results and improved caveats |
@@ -187,7 +187,7 @@ A GitHub Actions workflow is included to install dependencies, run the unit test
 
 The new notebook is valid JSON and its new cells contain the additional analysis logic. The Python module, tests and workflow have been added to the review branch. The rolling-origin calculations and reconciliation figures have been independently recalculated from the supplied illustrative data for this report.
 
-**Previous GitHub Actions run:** the earlier six-test suite passed and the analysis runner completed with `DATA CHECKS: PASS`. The expanded 13-test suite and artifact-upload step have since been added; their result must be checked on the latest branch commit before claiming the new checks pass. The revised notebook itself has not yet been executed end-to-end in Google Colab. Its saved outputs were cleared to avoid leaving stale outputs beside changed code.
+**GitHub Actions run #42 passed:** Python compilation succeeded, all 13 unit tests passed, `python run_analysis.py` completed with `DATA CHECKS: PASS`, and the workflow uploaded the generated CSV outputs as the `savings-analysis-outputs` artifact. The revised notebook itself has not yet been executed end-to-end in Google Colab. Its saved outputs were cleared to avoid leaving stale outputs beside changed code.
 
 Before merging, check the pull request's Actions status and run the Colab notebook from the first cell through the final cell. If the notebook and Python package produce any different figures, investigate the difference and update the report before publishing.
 

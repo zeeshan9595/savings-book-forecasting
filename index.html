@@ -35,9 +35,9 @@ footer{max-width:1240px;margin:0 auto;padding:0 24px 32px;font-size:12px;color:v
 <div class="kpi"><div class="l">+100bp shock</div><div class="v">+£1.7k/yr</div><div class="s">Easy access interest cost</div></div>
 </section>
 <section class="grid">
-<div class="card wide"><h2>Total book and 6-month forecast</h2><p>ARIMA(1,1,1) is the baseline; damped Holt-Winters is shown alongside. Shading is the ARIMA 95% interval. Both extend the recent trend.</p><canvas id="fc" height="110"></canvas></div>
+<div class="card wide"><h2>Total book and 6-month forecast</h2><p>ARIMA(1,1,1) is the baseline; damped Holt-Winters is shown alongside. Shading is the ARIMA 95% interval. Both extend the recent trend.</p><div style="height:380px"><canvas id="fc"></canvas></div></div>
 <div class="card"><h2>Balance by product</h2><p>Month-end balances.</p><canvas id="mix" height="220"></canvas></div>
-<div class="card"><h2>Monthly net flows</h2><p>Gross inflows minus outflows.</p><canvas id="flows" height="220"></canvas></div>
+<div class="card"><h2>Monthly net flows</h2><p>Gross inflows minus outflows.</p><canvas id="flowsChart" height="220"></canvas></div>
 <div class="card"><h2>Easy access rate vs market</h2><p>Our rate, competitor average and Bank of England base rate (%).</p><canvas id="rates" height="220"></canvas></div>
 <div class="card"><h2>Interest cost under parallel rate shocks</h2><p>Annual change on the £170k easy access balance, using our deposit beta of 1.00.</p><canvas id="shock" height="220"></canvas></div>
 <div class="card"><h2>3-month holdout backtest</h2><p>Trained on 15 months, tested on Apr–Jun 2024.</p>
@@ -72,9 +72,9 @@ new Chart(fc,{type:'line',data:{labels:allX,datasets:[
 {label:'ARIMA 95% interval',data:pad([total[17]].concat(LO)),borderColor:'transparent',backgroundColor:'rgba(108,63,197,.12)',pointRadius:0,fill:'-1'},
 {label:'ARIMA forecast',data:pad([total[17]].concat(AR)),borderColor:'#6c3fc5',backgroundColor:'#6c3fc5',pointRadius:3},
 {label:'Holt-Winters forecast',data:pad([total[17]].concat(HW)),borderColor:'#c0392b',backgroundColor:'#c0392b',borderDash:[6,4],pointRadius:3}]},
-options:{plugins:{legend:{labels:{filter:i=>i.text!=='ARIMA 95% upper'}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
+options:{maintainAspectRatio:false,plugins:{legend:{labels:{filter:i=>i.text!=='ARIMA 95% upper'}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
 new Chart(mix,{type:'bar',data:{labels:months,datasets:[['Easy access',EA,'#003366'],['Fixed 1yr',F1,'#0066cc'],['Fixed 2yr',F2,'#3399ff'],['Fixed 5yr',F5,'#99ccff']].map(([l,d,c])=>({label:l,data:d,backgroundColor:c}))},options:{scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:k}}},plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+k(c.parsed.y)}}}}});
-new Chart(flows,{type:'bar',data:{labels:months,datasets:[{label:'Net flow',data:flows,backgroundColor:flows.map(v=>v<0?'#c0392b':'#003366')}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
+new Chart(flowsChart,{type:'bar',data:{labels:months,datasets:[{label:'Net flow',data:flows,backgroundColor:flows.map(v=>v<0?'#c0392b':'#003366')}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
 new Chart(rates,{type:'line',data:{labels:['Jan 23','Apr 23','Jul 23','Oct 23','Jan 24','Apr 24','Jun 24'],datasets:[
 {label:'Our easy access',data:[3.0,3.5,4.5,4.75,5.0,5.1,5.0],borderColor:'#003366',backgroundColor:'#003366'},
 {label:'Competitor average',data:[2.8,3.4,4.4,4.7,5.1,5.2,5.3],borderColor:'#c0392b',backgroundColor:'#c0392b',borderDash:[6,4]},

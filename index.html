@@ -37,7 +37,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 24px 32px;font-size:12px;color:v
 <section class="grid">
 <div class="card wide"><h2>Total book and 6-month forecast</h2><p>ARIMA(1,1,1) is the baseline; damped Holt-Winters is shown alongside. Shading is the ARIMA 95% interval. Both extend the recent trend.</p><div style="height:380px"><canvas id="fc"></canvas></div></div>
 <div class="card"><h2>Balance by product</h2><p>Month-end balances.</p><canvas id="mix" height="220"></canvas></div>
-<div class="card"><h2>Monthly net flows</h2><p>Gross inflows minus outflows.</p><canvas id="flowsChart" height="220"></canvas></div>
+<div class="card"><h2>Monthly net flows</h2><p>Illustrative transaction series; not reconciled to month-on-month balance movements.</p><canvas id="flowsChart" height="220"></canvas></div>
 <div class="card"><h2>Easy access rate vs market</h2><p>Our rate, competitor average and Bank of England base rate (%).</p><canvas id="rates" height="220"></canvas></div>
 <div class="card"><h2>Interest cost under parallel rate shocks</h2><p>Annual change on the £170k easy access balance, using our deposit beta of 1.00.</p><canvas id="shock" height="220"></canvas></div>
 <div class="card"><h2>3-month holdout backtest</h2><p>Trained on 15 months, tested on Apr–Jun 2024.</p>
@@ -46,7 +46,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 24px 32px;font-size:12px;color:v
 <tr><td>Holt-Winters (damped)</td><td>10.5%</td><td>£82.8k</td><td>£85.6k</td></tr></table></div>
 <div class="card"><h2>Rate elasticity: why the sign flipped</h2><p>Easy access balance vs our rate minus competitors.</p>
 <table><tr><th>Model</th><th>Spread effect</th><th>Evidence</th></tr>
-<tr><td>Levels regression</td><td>−£116k per 1pp</td><td>Trending data, VIF 17.8</td></tr>
+<tr><td>Levels regression</td><td>−£116k per 1pp</td><td>Training VIF: trend 17.2; spread 7.4</td></tr>
 <tr><td>Monthly changes</td><td>+£65.6k per 1pp</td><td>p = 0.25, n = 17</td></tr></table>
 <p style="margin-top:10px">Modelling changes removes the shared trend and gives the expected sign, but 17 points cannot confirm it.</p></div>
 </section>

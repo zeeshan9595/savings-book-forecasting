@@ -1,115 +1,70 @@
-# Retail savings book analytics: forecasting, rate sensitivity and funding scenarios
+# Retail Savings Book Analytics
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb) [![Live dashboard](https://img.shields.io/badge/Live-dashboard-003366)](https://zeeshan9595.github.io/savings-book-forecasting/)
+[![Python CI](https://github.com/zeeshan9595/savings-book-forecasting/actions/workflows/tests.yml/badge.svg?branch=review%2Fforecasting-quality-fixes)](https://github.com/zeeshan9595/savings-book-forecasting/actions/workflows/tests.yml)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/review/forecasting-quality-fixes/savings_book_forecasting.ipynb)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 
-**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md) · **[Repository](https://github.com/zeeshan9595/savings-book-forecasting)**
+**An independent retail banking analytics case study** covering savings-book forecasting, deposit-rate pass-through, funding-cost sensitivity, cohort assumptions, fixed-term runoff and data-quality reconciliation.
 
-An independent retail savings analytics case study covering total-book forecasting, product mix, deposit-rate pass-through, funding-cost sensitivity, cohort assumptions and fixed-term maturity scenarios.
+**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md)** · **[Model card](MODEL_CARD.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Pull request #1](https://github.com/zeeshan9595/savings-book-forecasting/pull/1)**
 
-> **Data integrity statement:** The project uses 18 hand-built monthly observations (January 2023–June 2024), seven market-rate snapshots and illustrative transaction/cohort records. These are not bank data. No actual customer-level, account-level or contractual maturity records are supplied. All model outputs and scenarios are illustrative.
+> **Data integrity:** all source values are illustrative and hand-built. They are not actual bank, customer or account records. The project contains 18 monthly balance observations, seven market-rate snapshots and 45 cohort-retention observations. No contractual maturity dates or asset-side data are available.
 
-## Project scope
+## Executive snapshot
 
-| Workstream | Implementation |
+| Measure | Result | Interpretation |
+|---|---:|---|
+| Closing savings book | **£816,808** | June 2024; four products |
+| 1-month rolling MAPE | **4.55%** | Drift benchmark |
+| 3-month rolling MAPE | **7.93%** | Drift benchmark |
+| 6-month rolling MAPE | **7.45%** | Drift benchmark |
+| Cumulative flow residual | **£250,808** | Unexplained; not allocated to unsupported causes |
+| Deposit beta | **1.00** | Cumulative Jan–Oct 2023 endpoint ratio |
+| +100bp annualised cost sensitivity | **~£1,704** | Static balance and 1.00 pass-through assumption |
+
+The drift benchmark outperformed naïve, ARIMA(1,1,1) and damped Holt-Winters on pooled MAPE, MAE and RMSE at all three expanding-window horizons in this small illustrative dataset. Overlapping windows and the short series mean the results are descriptive, not statistically conclusive.
+
+## What the project does
+
+| Workstream | Method / deliverable |
 |---|---|
-| Savings book MI | Monthly balances for Easy Access, 1-year, 2-year and 5-year fixed products |
-| Forecasting | ARIMA(1,1,1), damped Holt-Winters, naïve and drift benchmarks |
-| Validation | Chronological three-month holdout plus expanding-window validation at 1-, 3- and 6-month horizons |
-| Diagnostics | ADF tests, training-sample VIF and first-difference regression |
-| Deposit beta | Cumulative hiking-cycle pass-through plus adjacent-snapshot interval ratios |
-| Interest cost | Mechanical annualised cost sensitivities at a constant balance |
-| Cohort modelling | Separate customer-retention and average-balance-per-retained-customer indices |
-| Maturity analysis | Explicitly assumption-led runoff proxy plus a contractual maturity input template |
-| Data quality | Product-balance checks and transaction-flow-to-balance movement reconciliation |
-| Reproducibility | CSV source data, Python analysis module, requirements, runner and unit tests |
+| Savings MI | Monthly balances and product composition across Easy Access, 1-year, 2-year and 5-year fixed products |
+| Forecasting | Naïve, drift, ARIMA(1,1,1) and damped Holt-Winters |
+| Backtesting | 15/3 chronological holdout and expanding windows at 1-, 3- and 6-month horizons |
+| Model diagnostics | ADF, training-sample VIF and first-difference regression |
+| Deposit pricing | Cumulative and adjacent-snapshot deposit-beta ratios |
+| Funding-cost sensitivity | Mechanical annualised interest-cost grid; no behavioural balance response |
+| Cohort analysis | Observed-retention summary plus separate retention and average-balance scenario indices |
+| Maturity analysis | Explicitly assumption-led fixed-term runoff proxy and account-level input template |
+| Data quality | Flow-to-balance reconciliation and input validation |
+| Engineering | Reusable Python module, CLI runner, CSV inputs, unit tests and GitHub Actions |
 
-## Key findings
+## Key analytical decisions
 
-### 1. Savings book and product composition
+### Forecasts are benchmarked, not selected by complexity
 
-The illustrative closing book in June 2024 is **£816,808**. The notebook charts the monthly balances and product mix across the four savings products. The balance series is intentionally retained as supplied; no missing customer or account activity has been fabricated to force a reconciliation.
+The 15-month training / three-month holdout remains in the original notebook, but it is too small to establish superiority. The expanding-window backtest uses a minimum of nine months of training data and compares four methods at three horizons. The drift benchmark is the best performer in the supplied data.
 
-### 2. Forecasting: a short holdout is not enough
+### Weak regression coefficients are not converted into balance forecasts
 
-The original chronological holdout contains 15 training months and three test months:
+The levels regression has trend and rate predictors that overlap materially. The first-difference spread coefficient is statistically weak (p approximately 0.25; n=17). Version 2 therefore removes balance-response scenarios derived from the levels regression.
 
-| Model | MAPE | MAE | RMSE |
-|---|---:|---:|---:|
-| ARIMA(1,1,1) | 8.30% | £65.4k | £68.4k |
-| Damped Holt-Winters | 10.53% | £82.9k | £85.6k |
+### Cost shocks are mechanical sensitivities
 
-This result is specific to three months and should not be treated as model selection evidence.
+A +100bp shock at 1.00 pass-through on a £170,433 Easy Access balance implies approximately £1,704 of additional annualised interest cost if the balance is held constant. This is not a forecast of customer behaviour or realised expense.
 
-The second validation layer uses expanding windows, a minimum of nine training months, and forecast horizons of 1, 3 and 6 months. Windows overlap; therefore pooled predictions are dependent and the results are indicative rather than a formal statistical comparison.
+### Missing data is made visible
 
-| Horizon | Model | Forecasts | MAPE | MAE | RMSE |
-|---:|---|---:|---:|---:|---:|
-| 1 month | Naïve | 9 | 7.21% | £45.6k | £55.2k |
-| 1 month | Drift | 9 | **4.55%** | **£30.0k** | **£34.2k** |
-| 1 month | ARIMA | 9 | 4.67% | £31.0k | £36.2k |
-| 1 month | Damped Holt-Winters | 9 | 5.40% | £36.6k | £42.2k |
-| 3 months | Naïve | 21 | 14.28% | £95.6k | £118.7k |
-| 3 months | Drift | 21 | **7.93%** | **£56.5k** | **£66.9k** |
-| 3 months | ARIMA | 21 | 8.83% | £63.0k | £77.4k |
-| 3 months | Damped Holt-Winters | 21 | 9.25% | £65.8k | £74.0k |
-| 6 months | Naïve | 24 | 27.84% | £198.9k | £217.4k |
-| 6 months | Drift | 24 | **7.45%** | **£52.9k** | **£62.3k** |
-| 6 months | ARIMA | 24 | 8.99% | £64.5k | £79.5k |
-| 6 months | Damped Holt-Winters | 24 | 8.20% | £57.5k | £67.5k |
+The transaction net-flow series does not reconcile to month-on-month balance movements. The cumulative residual is £250,808, the mean absolute monthly residual is approximately £23,209 and the largest monthly residual is £82,000. No unsupported allocation is made.
 
-**Interpretation:** The drift benchmark has the lowest pooled MAPE, MAE and RMSE at all three horizons in this illustrative backtest. This is an important finding: more complex models do not automatically outperform a transparent benchmark. The small dataset, overlapping folds and synthetic observations limit generalisation.
+### Maturity and cohort assumptions are labelled
 
-### 3. Rate sensitivity and econometric diagnostics
+The source does not contain account-level contractual maturity dates or observed churn. The maturity schedule is an even-allocation proxy, and cohort scenarios use separate assumed customer-retention and average-balance indices.
 
-The initial levels regression included a time trend, Easy Access rate spread versus the competitor, and the Bank of England base rate. Its spread coefficient was approximately **−£116k per percentage point**. This should not be used as a behavioural or causal estimate.
-
-The ADF test cannot reject a unit root in the Easy Access balance level (p approximately 0.67), although the sample is too short for a strong conclusion. Training-sample VIFs indicate substantial overlap among predictors (trend approximately 17.2; spread approximately 7.4; base rate approximately 7.0).
-
-The first-difference model estimates a positive spread coefficient of approximately **£65.6k per percentage point**, but it is statistically weak (p approximately 0.25; 17 observations; R² approximately 0.10). The lagged specification does not establish a reliable effect. No upside/base/downside balance forecast is now generated from the confounded levels regression.
-
-### 4. Deposit beta: cumulative and interval views
-
-Across the January–October 2023 endpoints, the Bank of England base rate increased from 3.50% to 5.25%; the Easy Access rate increased from 3.00% to 4.75%. The cumulative pass-through ratio is therefore **1.00**. The competitor series gives approximately **1.09**.
-
-Version 2 also calculates adjacent-snapshot interval ratios only where the Bank of England rate changes. These are descriptive ratios based on seven sparse observations, not stable marginal deposit betas. A production analysis would need more frequent observations, product-specific pricing histories, balance-weighted deposit rates and both hiking and easing periods.
-
-### 5. Interest-cost scenarios: mechanical, not behavioural
-
-The rate-shock grid now calculates the annualised interest-cost impact from the assumed rate movement and the current Easy Access balance. It no longer converts the weakly identified regression coefficient into a customer-balance response.
-
-For example, a parallel +100bp shock at a 1.00 pass-through assumption on a £170,433 balance implies approximately **£1,704 additional annual interest cost**, holding the balance constant. This is arithmetic under an explicit assumption, not a forecast of actual funding cost or customer response.
-
-### 6. Cohort scenarios: retention separated from average balance
-
-The supplied cohort file has 45 observations, all with 100% retention. It cannot estimate observed churn. Version 2 therefore models two separate indices:
-- customer-retention index under an assumed monthly churn rate;
-- average-balance-per-retained-customer index under an assumed monthly growth rate.
-
-The projected cohort balance is the initial balance multiplied by these two indices. No customer count or observed average balance per customer is invented. The scenarios are sensitivities, not fitted retention forecasts.
-
-### 7. Fixed-term maturity runoff: proxy and data requirement
-
-The source has product-level closing balances but no account origination dates, contractual maturity dates, balances by vintage, or renewal instructions. A true maturity ladder cannot be built from these fields.
-
-The notebook and Python module include a clearly labelled proxy that spreads each closing fixed-term balance evenly over its nominal term (12, 24 or 60 months). It is an assumption-led runoff illustration, not a contractual maturity schedule.
-
-A blank template is included at `templates/fixed_term_maturity_template.csv`. Populate it with account or vintage-level opening balance, origination date, maturity date, rate, product and renewal/runoff assumption to build a real ladder.
-
-### 8. Transaction-flow reconciliation: unresolved £250,808 residual
-
-The transaction net-flow series does not reconcile to month-on-month changes in product balances. From February 2023 to June 2024:
-- cumulative unexplained movement: **£250,808**;
-- mean absolute monthly residual: approximately **£23,209**;
-- largest absolute monthly residual: **£82,000**.
-
-The residual is not assigned to interest, transfers, product migrations or other causes because those records are not provided. The chart is labelled as illustrative activity, not a ledger movement bridge. A blank movement-bridge template is provided at `templates/balance_movement_bridge_template.csv`.
-
-## Repository structure
+## Repository map
 
 ```text
 .
-├── README.md
-├── index.html
 ├── savings_book_forecasting.ipynb
 ├── analysis.py
 ├── run_analysis.py
@@ -122,37 +77,48 @@ The residual is not assigned to interest, transfers, product migrations or other
 ├── templates/
 │   ├── balance_movement_bridge_template.csv
 │   └── fixed_term_maturity_template.csv
-└── tests/
-    └── test_analysis.py
+├── tests/
+│   └── test_analysis.py
+├── .github/
+│   ├── workflows/tests.yml
+│   └── dependabot.yml
+├── PROJECT_REPORT.md
+├── MODEL_CARD.md
+├── DATA_DICTIONARY.md
+├── CITATION.cff
+└── index.html
 ```
 
-## Run the reproducible analysis
+## Run locally
 
-Python 3.10+ is recommended.
+Python 3.11 is used in continuous integration. From the repository root:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 python -m pip install -r requirements.txt
 python run_analysis.py
 python -m unittest discover -s tests -v
 ```
 
-The runner writes rolling-origin predictions and summary metrics, the reconciliation residuals, interval deposit-beta calculations, cohort scenarios and the maturity proxy to `outputs/`.
+The runner validates source schemas, date continuity, missing values and numeric ranges before writing reproducible CSV outputs to `outputs/`. The GitHub Actions workflow compiles the Python modules, runs the unit tests and executes the analysis.
 
-## Limitations and next data requirements
+## Technical stack
 
-- Eighteen monthly observations are insufficient for robust model selection or production forecasting.
-- Expanding-window folds overlap and are not independent; results are descriptive.
-- No account-level maturity dates, customer-level migrations, actual churn events or renewal decisions are available.
-- The balance-flow bridge is unresolved; missing movements must be sourced rather than estimated.
-- No asset-side data is available; NIM, liquidity coverage and full ALM measures are out of scope.
-- Market-rate snapshots are sparse and do not support a robust dynamic deposit-beta model.
+Python · pandas · NumPy · statsmodels · scikit-learn · matplotlib · seaborn · Google Colab · GitHub Actions · Chart.js
 
-For a production-grade extension, obtain daily/monthly account balances, transaction-level movement categories, customer IDs with privacy-safe cohort keys, account origination/maturity dates, renewal outcomes, product pricing history, competitor panels and relevant asset-side funding data.
+## Limitations
 
-## Tools
+- 18 monthly observations are insufficient for robust production forecasting.
+- Expanding-window folds overlap; pooled forecasts are not independent.
+- Seven rate snapshots do not support a stable dynamic deposit-beta model.
+- Cohort data records 100% retention throughout; empirical churn cannot be estimated.
+- Account-level maturity dates, product vintages and renewal outcomes are absent.
+- The flow-to-balance residual remains unexplained pending source ledger components.
+- No asset-side data is available for NIM, liquidity or full ALM analysis.
 
-Python, pandas, NumPy, statsmodels, scikit-learn, matplotlib, Google Colab and Chart.js.
+See the [detailed project report](PROJECT_REPORT.md) and [model card](MODEL_CARD.md) for methods, assumptions, validation and data requirements.
 
 ---
 
-Zeeshan Azeem Khalid · [LinkedIn](https://linkedin.com/in/zeeshan-azeem-khalid-9bb14098)
+**Author:** Zeeshan Azeem Khalid · [LinkedIn](https://linkedin.com/in/zeeshan-azeem-khalid-9bb14098)

@@ -87,12 +87,6 @@ class SavingsAnalysisTests(unittest.TestCase):
         self.assertTrue(result.loc[result.d_boe.abs() > 1e-12,
                                    "ours_interval_beta"].notna().all())
 
-    def test_cohort_source_shows_no_observed_churn(self):
-        summary = cohort_observed_summary(self.cohorts)
-        self.assertEqual(int(summary.observations.sum()), 45)
-        self.assertAlmostEqual(float(summary.min_retention_pct.min()), 100.0)
-        self.assertAlmostEqual(float(summary.max_retention_pct.max()), 100.0)
-
     def test_cohort_observed_summary_does_not_invent_churn(self):
         summary = cohort_observed_summary(self.cohorts)
         self.assertEqual(int(summary.observations.sum()), 45)

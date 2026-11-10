@@ -34,6 +34,18 @@ class SavingsAnalysisTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unique and chronological"):
             validate_inputs(broken, self.rates, self.flows, self.cohorts)
 
+    def test_validation_rejects_monthly_gaps(self):
+        broken = self.balances.copy()
+        broken.loc[5, "month"] = pd.Timestamp("2023-08-31")
+        with self.assertRaisesRegex(ValueError, "continuous monthly series"):
+            validate_inputs(broken, self.rates, self.flows, self.cohorts)
+
+    def test_validation_rejects_nonfinite_market_rates(self):
+        broken = self.rates.copy()
+        broken.loc[0, "boe_base_rate"] = np.inf
+        with self.assertRaisesRegex(ValueError, "finite numeric values"):
+            validate_inputs(self.balances, broken, self.flows, self.cohorts)
+
     def test_validation_rejects_negative_product_balance(self):
         broken = self.balances.copy()
         broken.loc[0, "EASY_ACCESS"] = -1
@@ -80,6 +92,12 @@ class SavingsAnalysisTests(unittest.TestCase):
         self.assertEqual(int(summary.observations.sum()), 45)
         self.assertAlmostEqual(float(summary.min_retention_pct.min()), 100.0)
         self.assertAlmostEqual(float(summary.max_retention_pct.max()), 100.0)
+
+    def test_cohort_observed_summary_does_not_invent_churn(self):
+        summary = cohort_observed_summary(self.cohorts)
+        self.assertEqual(int(summary.observations.sum()), 45)
+        self.assertTrue((summary.min_retention_pct == 100).all())
+        self.assertTrue((summary.max_retention_pct == 100).all())
 
     def test_cohort_scenarios_keep_components_separate(self):
         result = cohort_scenarios(initial_balance=47000, months=24)

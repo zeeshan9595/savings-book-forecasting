@@ -1,78 +1,124 @@
-# Savings book forecasting: model comparison, deposit beta and rate-shock scenarios
+# Retail Savings Book Analytics
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb) [![Live dashboard](https://img.shields.io/badge/Live-dashboard-003366)](https://zeeshan9595.github.io/savings-book-forecasting/)
+[![Python CI](https://github.com/zeeshan9595/savings-book-forecasting/actions/workflows/tests.yml/badge.svg?branch=review%2Fforecasting-quality-fixes)](https://github.com/zeeshan9595/savings-book-forecasting/actions/workflows/tests.yml)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/review/forecasting-quality-fixes/savings_book_forecasting.ipynb)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 
-**[Open the interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)**: forecast fan, product mix, net flows, rates vs market and rate-shock costs.
+**An independent retail banking analytics case study** covering savings-book forecasting, deposit-rate pass-through, funding-cost sensitivity, cohort assumptions, fixed-term runoff and data-quality reconciliation.
 
-Forecasting a retail savings book at total (macro) and product (micro) level: easy access, 1-year, 2-year and 5-year fixed-rate products. Built as a practice exercise in savings MI, forecasting and rate-sensitivity work.
+**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md)** · **[Contributing](CONTRIBUTING.md)** · **[Model card](MODEL_CARD.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Pull request #1](https://github.com/zeeshan9595/savings-book-forecasting/pull/1)**
 
-**The data is illustrative.** It is 18 months of hand-built practice data (Jan 2023 to Jun 2024, total book about £817k), mirroring a small SQL Server practice database. It is not data from any bank, and the numbers below show the method, not a real book.
+> **Data integrity:** all source values are illustrative and hand-built. They are not actual bank, customer or account records. The project contains 18 monthly balance observations, seven market-rate snapshots and 45 cohort-retention observations. No contractual maturity dates or asset-side data are available.
 
-## What the notebook does
+## Executive snapshot
 
-| Section | Method |
+| Measure | Result | Interpretation |
+|---|---:|---|
+| Closing savings book | **£816,808** | June 2024; four products |
+| 1-month rolling MAPE | **4.55%** | Drift benchmark |
+| 3-month rolling MAPE | **7.93%** | Drift benchmark |
+| 6-month rolling MAPE | **7.45%** | Drift benchmark |
+| Cumulative flow residual | **£250,808** | Unexplained; not allocated to unsupported causes |
+| Deposit beta | **1.00** | Cumulative Jan–Oct 2023 endpoint ratio |
+| +100bp annualised cost sensitivity | **~£1,704** | Static balance and 1.00 pass-through assumption |
+
+The drift benchmark outperformed naïve, ARIMA(1,1,1) and damped Holt-Winters on pooled MAPE, MAE and RMSE at all three expanding-window horizons in this small illustrative dataset. Overlapping windows and the short series mean the results are descriptive, not statistically conclusive.
+
+## What the project does
+
+| Workstream | Method / deliverable |
 |---|---|
-| Balance trends | Monthly balances by product, product mix, net flows |
-| Macro forecast | Damped Holt-Winters vs ARIMA(1,1,1); 15-month train, 3-month holdout; month-end dates throughout |
-| Diagnostics | Augmented Dickey-Fuller stationarity tests, variance inflation factors |
-| Micro elasticity | Easy access balance changes regressed on changes in our rate spread and the base rate, with a one-month lag |
-| Deposit beta | Pass-through of Bank of England rate changes to the easy access rate |
-| Rate shocks | Parallel ±25, 50, 100 and 200bp; competitor-only spread moves |
-| Cohort projection | Retention and balance under three assumed churn rates |
-| Dashboard | Six-panel summary for leadership |
+| Savings MI | Monthly balances and product composition across Easy Access, 1-year, 2-year and 5-year fixed products |
+| Forecasting | Naïve, drift, ARIMA(1,1,1) and damped Holt-Winters |
+| Backtesting | 15/3 chronological holdout and expanding windows at 1-, 3- and 6-month horizons |
+| Model diagnostics | ADF, training-sample VIF and first-difference regression |
+| Deposit pricing | Cumulative and adjacent-snapshot deposit-beta ratios |
+| Funding-cost sensitivity | Mechanical annualised interest-cost grid; no behavioural balance response |
+| Cohort analysis | Observed-retention summary plus separate retention and average-balance scenario indices |
+| Maturity analysis | Explicitly assumption-led fixed-term runoff proxy and account-level input template |
+| Data quality | Flow-to-balance reconciliation and input validation |
+| Engineering | Reusable Python module, CLI runner, CSV inputs, unit tests and GitHub Actions |
 
-## Results
+## Key analytical decisions
 
-### Macro forecast: 3-month holdout
+### Forecasts are benchmarked, not selected by complexity
 
-| Model | MAPE | MAE | RMSE |
-|---|---|---|---|
-| ARIMA(1,1,1) | 8.3% | £65.1k | £68.2k |
-| Holt-Winters (damped) | 10.5% | £82.8k | £85.6k |
+The 15-month training / three-month holdout remains in the original notebook, but it is too small to establish superiority. The expanding-window backtest uses a minimum of nine months of training data and compares four methods at three horizons. The drift benchmark is the best performer in the supplied data.
 
-The dashboard shows both paths: ARIMA as the baseline and Holt-Winters as a second view, with the gap between them shaded. Refitted on all 18 months, the 6-month forecasts are £993k (ARIMA) and £1.06m (Holt-Winters), against £817k today. Both extend the recent growth trend. AIC and BIC are reported in the notebook but are not comparable across the two model families.
+### Weak regression coefficients are not converted into balance forecasts
 
-### Why the original rate coefficient had the wrong sign
+The levels regression has trend and rate predictors that overlap materially. The first-difference spread coefficient is statistically weak (p approximately 0.25; n=17). Version 2 therefore removes balance-response scenarios derived from the levels regression.
 
-The first version regressed easy access balance *levels* on a trend, our rate minus competitors, and the base rate. The rate-spread coefficient came out at about -£116k per percentage point, which would mean paying more than competitors loses balances.
+### Cost shocks are mechanical sensitivities
 
-Two diagnostics explain why that result should not be trusted:
+A +100bp shock at 1.00 pass-through on a £170,433 Easy Access balance implies approximately £1,704 of additional annualised interest cost if the balance is held constant. This is not a forecast of customer behaviour or realised expense.
 
-- **Non-stationary balances.** The ADF test cannot reject a unit root in the balance level (p = 0.67). Regressing one trending series on others can produce relationships that are really shared trends (spurious regression).
-- **Collinear predictors.** VIFs are 17.8 for the trend and 9.4 for the rate spread, so the model cannot separate their effects.
+### Missing data is made visible
 
-Modelling month-on-month **changes** instead:
+The transaction net-flow series does not reconcile to month-on-month balance movements. The cumulative residual is £250,808, the mean absolute monthly residual is approximately £23,209 and the largest monthly residual is £82,000. No unsupported allocation is made.
 
-$$\Delta B_t = \alpha + \beta_1 \, \Delta \text{Spread}_t + \beta_2 \, \Delta \text{BoE}_t + \varepsilon_t$$
+### Maturity and cohort assumptions are labelled
 
-gives a spread coefficient of **+£65.6k per percentage point**, the expected direction, but with **p = 0.25** on 17 observations (R² 0.10). Adding a one-month lag on the spread does not change the picture. The sign is fixed without forcing it; the evidence is still weak because the spread only changes in a few months. Even differenced balances do not pass the ADF test here (p = 0.82), which says more about 17 points than about the data.
+The source does not contain account-level contractual maturity dates or observed churn. The maturity schedule is an even-allocation proxy, and cohort scenarios use separate assumed customer-retention and average-balance indices.
 
-### Deposit beta and rate shocks
+## Repository map
 
-Over the 2023 hiking cycle (base rate 3.50% to 5.25%), our easy access rate moved one-for-one with the base rate (beta **1.00**); competitors averaged **1.09**.
+```text
+.
+├── savings_book_forecasting.ipynb
+├── analysis.py
+├── run_analysis.py
+├── requirements.txt
+├── data/
+│   ├── monthly_balances.csv
+│   ├── market_rates.csv
+│   ├── monthly_flows.csv
+│   └── cohort_retention.csv
+├── templates/
+│   ├── balance_movement_bridge_template.csv
+│   └── fixed_term_maturity_template.csv
+├── tests/
+│   └── test_analysis.py
+├── .github/
+│   ├── workflows/tests.yml
+│   └── dependabot.yml
+├── PROJECT_REPORT.md
+├── MODEL_CARD.md
+├── DATA_DICTIONARY.md
+├── CITATION.cff
+└── index.html
+```
 
-$$\beta = \frac{\Delta \text{Rate}_{\text{easy access}}}{\Delta \text{Rate}_{\text{BoE}}}$$
+## Run locally
 
-| Scenario | Annual easy access interest cost | Balance effect via spread |
-|---|---|---|
-| Parallel +25bp | +£426 | -£1.4k |
-| Parallel +100bp | +£1,704 | -£5.6k |
-| Parallel -100bp | -£1,704 | +£5.6k |
-| Competitors +25bp, base fixed | £0 | -£16.4k |
-| Competitors +50bp, base fixed | £0 | -£32.8k |
+Python 3.11 is used in continuous integration. From the repository root:
 
-Interest cost uses the £170k easy access balance and our beta. Balance effects use the weakly identified differenced elasticity, so read them as direction and rough size only. Because competitors pass on slightly more than we do, parallel rises widen their lead and cost us a little balance.
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+python -m pip install -r requirements.txt
+python run_analysis.py
+python -m unittest discover -s tests -v
+```
 
-## Caveats
+The runner validates source schemas, date continuity, missing values and numeric ranges before writing reproducible CSV outputs to `outputs/`. The GitHub Actions workflow compiles the Python modules, runs the unit tests and executes the analysis.
 
-- 18 monthly points. Every estimate here has wide uncertainty.
-- Forecasts extend the recent trend; they are not an outlook.
-- No churn in the practice data: every cohort kept 100% retention, so the cohort heatmap was removed and projections use assumed churn.
-- Net interest margin and liquidity metrics are out of scope: the data has no asset side.
+## Technical stack
 
-## Stack
+Python · pandas · NumPy · statsmodels · scikit-learn · matplotlib · seaborn · Google Colab · GitHub Actions · Chart.js
 
-Python, pandas, statsmodels, scikit-learn, matplotlib, seaborn, Google Colab.
+## Limitations
+
+- 18 monthly observations are insufficient for robust production forecasting.
+- Expanding-window folds overlap; pooled forecasts are not independent.
+- Seven rate snapshots do not support a stable dynamic deposit-beta model.
+- Cohort data records 100% retention throughout; empirical churn cannot be estimated.
+- Account-level maturity dates, product vintages and renewal outcomes are absent.
+- The flow-to-balance residual remains unexplained pending source ledger components.
+- No asset-side data is available for NIM, liquidity or full ALM analysis.
+
+See the [detailed project report](PROJECT_REPORT.md) and [model card](MODEL_CARD.md) for methods, assumptions, validation and data requirements.
 
 ---
-Zeeshan Azeem Khalid · [LinkedIn](https://linkedin.com/in/zeeshan-azeem-khalid) · See also: [Lending Club credit decisions](https://github.com/zeeshan9595/lending-club-credit-decisions) · [Fraud detection leakage audit](https://github.com/zeeshan9595/Fraud-Detection-using-AI-and-ML)
+
+**Author:** Zeeshan Azeem Khalid · [LinkedIn](https://linkedin.com/in/zeeshan-azeem-khalid-9bb14098)

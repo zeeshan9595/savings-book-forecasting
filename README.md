@@ -6,7 +6,7 @@
 
 **An independent retail banking analytics case study** covering savings-book forecasting, deposit-rate pass-through, funding-cost sensitivity, cohort assumptions, fixed-term runoff and data-quality reconciliation.
 
-**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md)** · **[Model card](MODEL_CARD.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Pull request #1](https://github.com/zeeshan9595/savings-book-forecasting/pull/1)**
+**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md)** · **[Contributing](CONTRIBUTING.md)** · **[Model card](MODEL_CARD.md)** · **[Data dictionary](DATA_DICTIONARY.md)** · **[Pull request #1](https://github.com/zeeshan9595/savings-book-forecasting/pull/1)**
 
 > **Data integrity:** all source values are illustrative and hand-built. They are not actual bank, customer or account records. The project contains 18 monthly balance observations, seven market-rate snapshots and 45 cohort-retention observations. No contractual maturity dates or asset-side data are available.
 

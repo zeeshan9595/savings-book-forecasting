@@ -105,8 +105,9 @@ def deposit_beta(rates: pd.DataFrame) -> pd.DataFrame:
     r["d_boe"] = r["boe_base_rate"].diff()
     r["d_ours"] = r["EASY_ACCESS_ours"].diff()
     r["d_competitor"] = r["EASY_ACCESS_competitor"].diff()
-    r["ours_interval_beta"] = np.where(r["d_boe"].abs() > 1e-12, r["d_ours"] / r["d_boe"], np.nan)
-    r["competitor_interval_beta"] = np.where(r["d_boe"].abs() > 1e-12, r["d_competitor"] / r["d_boe"], np.nan)
+    valid = r["d_boe"].abs() > 1e-12
+    r["ours_interval_beta"] = np.divide(r["d_ours"], r["d_boe"], out=np.full(len(r), np.nan), where=valid)
+    r["competitor_interval_beta"] = np.divide(r["d_competitor"], r["d_boe"], out=np.full(len(r), np.nan), where=valid)
     return r[["rate_date", "d_boe", "d_ours", "d_competitor",
               "ours_interval_beta", "competitor_interval_beta"]]
 

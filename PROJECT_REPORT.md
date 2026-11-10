@@ -4,7 +4,7 @@
 **Project type:** Independent banking analytics case study  
 **Data period:** January 2023 to June 2024  
 **Currency:** GBP  
-**Status:** Version 2 changes proposed in pull request; notebook outputs require regeneration in a live runtime.
+**Status:** Version 2 changes are in a draft pull request; Python tests and the reproducible analysis pass in GitHub Actions. The Colab notebook still needs a full interactive-runtime run.
 
 ## Executive summary
 
@@ -187,7 +187,7 @@ A GitHub Actions workflow is included to install dependencies, run the unit test
 
 The new notebook is valid JSON and its new cells contain the additional analysis logic. The Python module, tests and workflow have been added to the review branch. The rolling-origin calculations and reconciliation figures have been independently recalculated from the supplied illustrative data for this report.
 
-**The revised notebook has not yet been executed end-to-end in Google Colab, and the GitHub Actions run must be checked after the updated pull request is pushed.** The saved notebook outputs have been cleared to avoid leaving stale outputs beside changed code. Do not treat the notebook as fully runtime-validated until the outputs and CI checks have been regenerated and reviewed.
+**GitHub Actions has completed successfully on the updated branch:** all six unit tests passed, and `python run_analysis.py` completed with `DATA CHECKS: PASS`, generated the output CSVs and printed the rolling-origin results. The revised notebook itself has not yet been executed end-to-end in Google Colab. Its saved outputs were cleared to avoid leaving stale outputs beside changed code. Treat the Python package as CI-validated, but do not treat the notebook as Colab-runtime-validated until it has been run from the first cell to the last.
 
 Before merging, check the pull request's Actions status and run the Colab notebook from the first cell through the final cell. If the notebook and Python package produce any different figures, investigate the difference and update the report before publishing.
 

@@ -48,10 +48,10 @@ footer{max-width:1240px;margin:0 auto;padding:0 24px 32px;font-size:12px;color:v
 <table><tr><th>Model</th><th>Spread effect</th><th>Evidence</th></tr>
 <tr><td>Levels regression</td><td>−£116k per 1pp</td><td>Training VIF: trend 17.2; spread 7.4</td></tr>
 <tr><td>Monthly changes</td><td>+£65.6k per 1pp</td><td>p = 0.25, n = 17</td></tr></table>
-<p style="margin-top:10px">Modelling changes removes the shared trend and gives the expected sign, but 17 points cannot confirm it.</p></div>
+<p style="margin-top:10px">Differencing reduces the shared-trend problem, but the coefficient remains statistically weak and 17 points cannot confirm the relationship.</p></div>
 </section>
 </main>
-<footer>Python (pandas, statsmodels, scikit-learn) in Google Colab. Dashboard built with Chart.js. Caveats: 18 monthly points; no asset side, so no NIM or liquidity metrics.</footer>
+<footer>Python (pandas, statsmodels, scikit-learn) in Google Colab. Dashboard built with Chart.js. Caveats: 18 monthly points; transaction flows do not reconcile to balance movements; no asset side, so no NIM or liquidity metrics.</footer>
 <script>
 const months=['Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23','Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24'];
 const EA=[15000,23000,25000,37000,52000,71000,71000,71000,92000,103000,110500,147000,171294,176294,171422,184422,194422,170433];

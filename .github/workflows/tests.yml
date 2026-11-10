@@ -33,3 +33,10 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Run reproducible analysis
         run: python run_analysis.py
+      - name: Upload analysis outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: savings-analysis-outputs
+          path: outputs/*.csv
+          if-no-files-found: error
+          retention-days: 14

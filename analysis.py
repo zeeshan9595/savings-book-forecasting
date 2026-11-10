@@ -53,7 +53,7 @@ def validate_inputs(balances, rates, flows, cohorts):
     if balances["month"].duplicated().any() or not balances["month"].is_monotonic_increasing:
         raise ValueError("Balance months must be unique and chronological.")
     periods = balances["month"].dt.to_period("M")
-    if not periods.diff().dropna().eq(1).all():
+    if not periods.astype("int64").diff().dropna().eq(1).all():
         raise ValueError("Balance observations must form a continuous monthly series.")
     if len(balances) < 12:
         raise ValueError("At least 12 monthly balance observations are required.")
@@ -70,8 +70,17 @@ def validate_inputs(balances, rates, flows, cohorts):
         balances["month"].dt.to_period("M").reset_index(drop=True)
     ):
         raise ValueError("Flow months must align one-to-one with balance months.")
-    if (flows[["gross_inflows", "gross_outflows"]] < 0).any().any():
+    flow_values = flows[["gross_inflows", "gross_outflows"]].to_numpy(dtype=float)
+    if not np.isfinite(flow_values).all():
+        raise ValueError("Gross inflows and outflows must be finite numeric values.")
+    if (flow_values < 0).any():
         raise ValueError("Gross inflows and outflows cannot be negative.")
+    rate_columns = [
+        "EASY_ACCESS_ours", "EASY_ACCESS_competitor",
+        "FIXED_1YR_ours", "FIXED_1YR_competitor", "boe_base_rate"
+    ]
+    if not np.isfinite(rates[rate_columns].to_numpy(dtype=float)).all():
+        raise ValueError("Market rates must be finite numeric values.")
     if not cohorts["retention_rate"].between(0, 100).all():
         raise ValueError("Cohort retention rates must be between 0 and 100.")
     if (cohorts["months_since_acq"] < 0).any():

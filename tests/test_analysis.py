@@ -36,7 +36,7 @@ class SavingsAnalysisTests(unittest.TestCase):
 
     def test_validation_rejects_monthly_gaps(self):
         broken = self.balances.copy()
-        broken.loc[5, "month"] = pd.Timestamp("2023-08-31")
+        broken.loc[5, "month"] = pd.Timestamp("2023-06-15")
         with self.assertRaisesRegex(ValueError, "continuous monthly series"):
             validate_inputs(broken, self.rates, self.flows, self.cohorts)
 

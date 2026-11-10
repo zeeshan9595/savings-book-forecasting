@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Savings Book Forecasting Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--ink:#14213d;--muted:#5c677d;--line:#e3e7ee;--bg:#f6f8fb;--navy:#003366;--blue:#0066cc;--sky:#3399ff;--pale:#99ccff;--red:#c0392b;--purple:#6c3fc5}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:28px 32px}header h1{margin:0 0 6px;font-size:24px}header p{margin:0;opacity:.85;font-size:14px}
+main{max-width:1240px;margin:0 auto;padding:24px}
+.note{background:#fff7e0;border:1px solid #f0d58a;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:24px;font-weight:700;margin-top:6px}.kpi .s{font-size:12px;color:var(--muted);margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}.card h2{font-size:15px;margin:0 0 4px}.card p{font-size:12px;color:var(--muted);margin:0 0 10px}
+.wide{grid-column:1/-1}canvas{width:100%!important}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:600}
+footer{max-width:1240px;margin:0 auto;padding:0 24px 32px;font-size:12px;color:var(--muted)}a{color:var(--blue)}
+</style>
+</head>
+<body>
+<header>
+<h1>Savings Book Forecasting Dashboard</h1>
+<p>Macro and product forecasts, deposit beta and rate-shock scenarios · Jan 2023 to Jun 2024 · Zeeshan Azeem Khalid</p>
+</header>
+<main>
+<div class="note"><strong>Illustrative data.</strong> 18 months of hand-built practice data, not from any bank. The numbers show the method, not a real book. Full analysis: <a href="https://github.com/zeeshan9595/savings-book-forecasting">GitHub repo</a> · <a href="https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb">notebook in Colab</a>.</div>
+<section class="kpis">
+<div class="kpi"><div class="l">Total book, Jun 2024</div><div class="v">£816.8k</div><div class="s">4 products</div></div>
+<div class="kpi"><div class="l">6-month forecast</div><div class="v">£993k – £1.06m</div><div class="s">ARIMA baseline to Holt-Winters</div></div>
+<div class="kpi"><div class="l">Holdout error (MAPE)</div><div class="v">8.3%</div><div class="s">ARIMA; Holt-Winters 10.5%</div></div>
+<div class="kpi"><div class="l">Deposit beta</div><div class="v">1.00</div><div class="s">Competitors 1.09 (2023 hikes)</div></div>
+<div class="kpi"><div class="l">+100bp shock</div><div class="v">+£1.7k/yr</div><div class="s">Easy access interest cost</div></div>
+</section>
+<section class="grid">
+<div class="card wide"><h2>Total book and 6-month forecast</h2><p>ARIMA(1,1,1) is the baseline; damped Holt-Winters is shown alongside. Shading is the ARIMA 95% interval. Both extend the recent trend.</p><canvas id="fc" height="110"></canvas></div>
+<div class="card"><h2>Balance by product</h2><p>Month-end balances.</p><canvas id="mix" height="220"></canvas></div>
+<div class="card"><h2>Monthly net flows</h2><p>Gross inflows minus outflows.</p><canvas id="flows" height="220"></canvas></div>
+<div class="card"><h2>Easy access rate vs market</h2><p>Our rate, competitor average and Bank of England base rate (%).</p><canvas id="rates" height="220"></canvas></div>
+<div class="card"><h2>Interest cost under parallel rate shocks</h2><p>Annual change on the £170k easy access balance, using our deposit beta of 1.00.</p><canvas id="shock" height="220"></canvas></div>
+<div class="card"><h2>3-month holdout backtest</h2><p>Trained on 15 months, tested on Apr–Jun 2024.</p>
+<table><tr><th>Model</th><th>MAPE</th><th>MAE</th><th>RMSE</th></tr>
+<tr><td>ARIMA(1,1,1)</td><td>8.3%</td><td>£65.1k</td><td>£68.2k</td></tr>
+<tr><td>Holt-Winters (damped)</td><td>10.5%</td><td>£82.8k</td><td>£85.6k</td></tr></table></div>
+<div class="card"><h2>Rate elasticity: why the sign flipped</h2><p>Easy access balance vs our rate minus competitors.</p>
+<table><tr><th>Model</th><th>Spread effect</th><th>Evidence</th></tr>
+<tr><td>Levels regression</td><td>−£116k per 1pp</td><td>Trending data, VIF 17.8</td></tr>
+<tr><td>Monthly changes</td><td>+£65.6k per 1pp</td><td>p = 0.25, n = 17</td></tr></table>
+<p style="margin-top:10px">Modelling changes removes the shared trend and gives the expected sign, but 17 points cannot confirm it.</p></div>
+</section>
+</main>
+<footer>Python (pandas, statsmodels, scikit-learn) in Google Colab. Dashboard built with Chart.js. Caveats: 18 monthly points; no asset side, so no NIM or liquidity metrics.</footer>
+<script>
+const months=['Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23','Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24'];
+const EA=[15000,23000,25000,37000,52000,71000,71000,71000,92000,103000,110500,147000,171294,176294,171422,184422,194422,170433];
+const F1=[0,0,45000,45000,45000,63000,103000,138000,138000,154000,173000,228000,271141,311141,311141,311141,311141,316141];
+const F2=[0,30000,30000,40000,68000,68000,108000,108000,136000,136000,181000,181000,181390,213390,213390,213390,213390,277484];
+const F5=[0,0,0,0,0,0,50000,50000,50000,50000,50000,50000,52750,52750,52750,52750,52750,52750];
+const total=EA.map((v,i)=>v+F1[i]+F2[i]+F5[i]);
+const fm=['Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24'];
+const AR=[847700,877944,907555,936545,964928,992716],HW=[858159,898939,939157,978820,1017935,1056510],LO=[764689,741760,717629,690575,660300,626849],HI=[930711,1014129,1097482,1182516,1269557,1358584];
+const flows=[15000,13000,47000,28000,25500,35000,48000,35000,30000,18000,26500,72000,65000,53000,61000,10000,3500,-19500];
+const k=v=>'£'+Math.round(v/1000)+'k';
+Chart.defaults.font.family='system-ui,-apple-system,Segoe UI,Roboto,sans-serif';Chart.defaults.color='#5c677d';
+const pad=a=>Array(17).fill(null).concat(a);
+const allX=months.concat(fm);
+new Chart(fc,{type:'line',data:{labels:allX,datasets:[
+{label:'Actual',data:total.concat(Array(6).fill(null)),borderColor:'#003366',backgroundColor:'#003366',tension:.2,pointRadius:3},
+{label:'ARIMA 95% upper',data:pad([total[17]].concat(HI)),borderColor:'transparent',pointRadius:0,fill:false},
+{label:'ARIMA 95% interval',data:pad([total[17]].concat(LO)),borderColor:'transparent',backgroundColor:'rgba(108,63,197,.12)',pointRadius:0,fill:'-1'},
+{label:'ARIMA forecast',data:pad([total[17]].concat(AR)),borderColor:'#6c3fc5',backgroundColor:'#6c3fc5',pointRadius:3},
+{label:'Holt-Winters forecast',data:pad([total[17]].concat(HW)),borderColor:'#c0392b',backgroundColor:'#c0392b',borderDash:[6,4],pointRadius:3}]},
+options:{plugins:{legend:{labels:{filter:i=>i.text!=='ARIMA 95% upper'}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
+new Chart(mix,{type:'bar',data:{labels:months,datasets:[['Easy access',EA,'#003366'],['Fixed 1yr',F1,'#0066cc'],['Fixed 2yr',F2,'#3399ff'],['Fixed 5yr',F5,'#99ccff']].map(([l,d,c])=>({label:l,data:d,backgroundColor:c}))},options:{scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:k}}},plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+k(c.parsed.y)}}}}});
+new Chart(flows,{type:'bar',data:{labels:months,datasets:[{label:'Net flow',data:flows,backgroundColor:flows.map(v=>v<0?'#c0392b':'#003366')}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>k(c.parsed.y)}}},scales:{y:{ticks:{callback:k}}}}});
+new Chart(rates,{type:'line',data:{labels:['Jan 23','Apr 23','Jul 23','Oct 23','Jan 24','Apr 24','Jun 24'],datasets:[
+{label:'Our easy access',data:[3.0,3.5,4.5,4.75,5.0,5.1,5.0],borderColor:'#003366',backgroundColor:'#003366'},
+{label:'Competitor average',data:[2.8,3.4,4.4,4.7,5.1,5.2,5.3],borderColor:'#c0392b',backgroundColor:'#c0392b',borderDash:[6,4]},
+{label:'BoE base rate',data:[3.5,4.25,5.0,5.25,5.25,5.25,5.0],borderColor:'#8a94a6',backgroundColor:'#8a94a6',borderDash:[2,3]}]},options:{scales:{y:{ticks:{callback:v=>v+'%'}}}}});
+const bps=[-200,-100,-50,-25,25,50,100,200];const cost=bps.map(b=>Math.round(170433*b/10000));
+new Chart(shock,{type:'bar',data:{labels:bps.map(b=>(b>0?'+':'')+b+'bp'),datasets:[{label:'Annual interest cost change',data:cost,backgroundColor:cost.map(v=>v<0?'#003366':'#c0392b')}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'£'+c.parsed.x.toLocaleString()}}},scales:{x:{ticks:{callback:v=>'£'+(v/1000).toFixed(1)+'k'}}}}});
+</script>
+</body>
+</html>

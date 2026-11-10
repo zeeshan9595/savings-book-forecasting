@@ -187,7 +187,7 @@ A GitHub Actions workflow is included to install dependencies, run the unit test
 
 The new notebook is valid JSON and its new cells contain the additional analysis logic. The Python module, tests and workflow have been added to the review branch. The rolling-origin calculations and reconciliation figures have been independently recalculated from the supplied illustrative data for this report.
 
-**GitHub Actions has completed successfully on the updated branch:** all six unit tests passed, and `python run_analysis.py` completed with `DATA CHECKS: PASS`, generated the output CSVs and printed the rolling-origin results. The revised notebook itself has not yet been executed end-to-end in Google Colab. Its saved outputs were cleared to avoid leaving stale outputs beside changed code. Treat the Python package as CI-validated, but do not treat the notebook as Colab-runtime-validated until it has been run from the first cell to the last.
+**Previous GitHub Actions run:** the earlier six-test suite passed and the analysis runner completed with `DATA CHECKS: PASS`. The expanded 13-test suite and artifact-upload step have since been added; their result must be checked on the latest branch commit before claiming the new checks pass. The revised notebook itself has not yet been executed end-to-end in Google Colab. Its saved outputs were cleared to avoid leaving stale outputs beside changed code.
 
 Before merging, check the pull request's Actions status and run the Colab notebook from the first cell through the final cell. If the notebook and Python package produce any different figures, investigate the difference and update the report before publishing.
 

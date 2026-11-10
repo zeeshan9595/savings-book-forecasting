@@ -2,7 +2,7 @@
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb) [![Live dashboard](https://img.shields.io/badge/Live-dashboard-003366)](https://zeeshan9595.github.io/savings-book-forecasting/)
 
-**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Repository](https://github.com/zeeshan9595/savings-book-forecasting)**
+**[Interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)** · **[Detailed project report](PROJECT_REPORT.md) · **[Repository](https://github.com/zeeshan9595/savings-book-forecasting)**
 
 An independent retail savings analytics case study covering total-book forecasting, product mix, deposit-rate pass-through, funding-cost sensitivity, cohort assumptions and fixed-term maturity scenarios.
 

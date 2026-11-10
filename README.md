@@ -1,6 +1,8 @@
 # Savings book forecasting: model comparison, deposit beta and rate-shock scenarios
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zeeshan9595/savings-book-forecasting/blob/main/savings_book_forecasting.ipynb) [![Live dashboard](https://img.shields.io/badge/Live-dashboard-003366)](https://zeeshan9595.github.io/savings-book-forecasting/)
+
+**[Open the interactive dashboard](https://zeeshan9595.github.io/savings-book-forecasting/)**: forecast fan, product mix, net flows, rates vs market and rate-shock costs.
 
 Forecasting a retail savings book at total (macro) and product (micro) level: easy access, 1-year, 2-year and 5-year fixed-rate products. Built as a practice exercise in savings MI, forecasting and rate-sensitivity work.
 
